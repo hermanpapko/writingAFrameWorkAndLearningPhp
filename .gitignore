@@ -1,0 +1,43 @@
+### --- Environment & Secrets ---
+# Самое важное: никогда не пушим пароли и ключи
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+### --- PHP / Composer ---
+# Зависимости устанавливаются внутри контейнера или локально, их не должно быть в Git
+/vendor/
+# Если используете PHPUnit
+.phpunit.result.cache
+.phpunit.cache/
+
+### --- Docker ---
+# Если у вас хранятся данные базы локально (например, в папке ./pgdata)
+/pgdata/
+# Логи контейнеров, если вы выводите их в файлы
+docker/logs/*.log
+
+### --- OS Specific (macOS) ---
+# Специфично для вашего MacBook Air
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+### --- IDEs & Editors ---
+# VS Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (PhpStorm)
+.idea/
+
+### --- Logs & Temp ---
+*.log
+/tmp/
