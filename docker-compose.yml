@@ -20,6 +20,8 @@ services:
       DB_HOST: ${DB_HOST}
 
   db:
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     image: postgres:15-alpine
     environment:
       POSTGRES_DB: ${DB_NAME}
