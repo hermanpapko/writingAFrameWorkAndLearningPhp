@@ -5,24 +5,27 @@ services:
       - "8080:80"
     volumes:
       - ./src:/var/www/html
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - php
 
   php:
     build: docker/php
     volumes:
-      - ./src:/var/www/html
+      - .:/var/www/html
     environment:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
 
   db:
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    image: postgres:15-alpine
+    image: postgres:17-alpine
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
