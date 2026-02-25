@@ -10,7 +10,7 @@ services:
       - php
 
   php:
-    build: ./php
+    build: docker/php
     volumes:
       - ./src:/var/www/html
     environment:
