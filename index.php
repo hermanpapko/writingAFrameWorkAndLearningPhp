@@ -1,19 +1,17 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/autoload.php';
 
-use App\Database;
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+$controller = new App\Controllers\UserController();
 try {
-    $pdo = Database::getInstance()->getConnection();
-    $stmt = $pdo->query("SELECT * FROM public.users");
-    $users = $stmt->fetchAll();
-
-    echo "<h1>City:</h1>";
-    echo "<ul>";
-    foreach ($users as $user) {
-        echo "<li>" . htmlspecialchars($user['city']) . "</li>";
+    if ($requestUri === '/analyse' || $requestUri === '/analyze') {
+        $controller->analyze();
+    } elseif ($requestUri === '/parse') {
+        $controller->parse();
+    } else {
+        echo "Hi! Use /analyze or /parse";
     }
-    echo "</ul>";
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
 }

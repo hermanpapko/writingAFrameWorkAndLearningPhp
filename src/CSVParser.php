@@ -12,9 +12,15 @@ class CSVParser
         }
 
         $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            throw new Exception("Could not open file: $filePath");
+        }
         fgetcsv($handle, 0, ",", "\"", "\\");
 
         while (($row = fgetcsv($handle, 0, ",", "\"", "\\")) !== false) {
+            if (count($row) < 9) {
+                continue;
+            }
             yield [
                 'country'           => $row[0],
                 'city'              => $row[1],
