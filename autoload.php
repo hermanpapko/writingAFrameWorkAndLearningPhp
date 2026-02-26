@@ -13,3 +13,5 @@ spl_autoload_register(function ($class) {
         }
     }
 });
+
+// не использую по 3 заданию(написан для 2)

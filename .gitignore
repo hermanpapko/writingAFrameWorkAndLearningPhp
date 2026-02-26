@@ -41,3 +41,6 @@ Icon
 ### --- Logs & Temp ---
 *.log
 /tmp/
+
+
+/var/data.txt
