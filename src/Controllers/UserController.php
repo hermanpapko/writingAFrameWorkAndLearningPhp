@@ -6,6 +6,8 @@ use App\Database;
 use App\UserRepository;
 use App\CSVParser;
 use Faker\Factory as FakerFactory;
+use PDO;
+
 class UserController
 {
     public function analyze(): void
@@ -13,7 +15,8 @@ class UserController
         try {
             $pdo = Database::getInstance()->getConnection();
             $stmt = $pdo->query("SELECT city FROM public.users");
-            $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            /** @var \PDOStatement $stmt */
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             if (empty($users)) {
                 echo "<h1>No users found in database.</h1>";
@@ -41,7 +44,7 @@ class UserController
             $parser = new CSVParser();
 
             $csvFile = dirname(__DIR__, 2) . '/var/users.csv';
-            
+
             if (!file_exists($csvFile)) {
                 http_response_code(404);
                 echo "CSV file not found at: $csvFile";
@@ -53,7 +56,7 @@ class UserController
                 $repository->save($userData);
                 $count++;
             }
-            
+
             echo "Import successful. $count records processed.";
         } catch (\Exception $e) {
             http_response_code(500);
@@ -124,7 +127,7 @@ class UserController
         fclose($handle);
 
         http_response_code(200);
-        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Type: application/json; charset=dodutf-8');
         echo json_encode(
             [
                 'status' => 'ok',

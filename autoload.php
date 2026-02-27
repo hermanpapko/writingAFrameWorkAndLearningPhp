@@ -1,4 +1,5 @@
 <?php
+
 spl_autoload_register(function ($class) {
     $map = require __DIR__ . '/config/autoload_config.php';
 

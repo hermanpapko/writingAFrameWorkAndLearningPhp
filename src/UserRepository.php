@@ -1,18 +1,35 @@
 <?php
 
 namespace App;
+
 use PDO;
-class UserRepository {
+
+class UserRepository
+{
     private PDO $db;
-    public function __construct(Database $db) {
+    public function __construct(Database $db)
+    {
         $this->db = $db->getConnection();
     }
-
-    public function save(array $data) {
+    /**
+     * @param array{
+     *     country: string,
+     *     city: string,
+     *     is_active: bool,
+     *     gender: string,
+     *     birth_date: string,
+     *     salary: float|int|string,
+     *     has_children: bool,
+     *     family_status: string,
+     *     registration_date: string
+     * } $data
+     */
+    public function save(array $data): bool
+    {
         $sql = "INSERT INTO public.users (country, city, is_active, gender, birth_date, salary, has_children, family_status, registration_date) 
                 VALUES (:country, :city, :is_active, :gender, :birth_date, :salary, :has_children, :family_status, :registration_date)";
         $stmt = $this->db->prepare($sql);
-        
+
         $stmt->bindValue(':country', $data['country']);
         $stmt->bindValue(':city', $data['city']);
         $stmt->bindValue(':is_active', $data['is_active'], PDO::PARAM_BOOL);
@@ -22,11 +39,19 @@ class UserRepository {
         $stmt->bindValue(':has_children', $data['has_children'], PDO::PARAM_BOOL);
         $stmt->bindValue(':family_status', $data['family_status']);
         $stmt->bindValue(':registration_date', $data['registration_date']);
-        
+
         return $stmt->execute();
     }
-
-    public function findByFilters(array $filters) {
+    /**
+     * @param array{
+     *     city?: string,
+     *     date_from?: string,
+     *     date_to?: string
+     * } $filters
+     * @return array<int, array<string, mixed>>
+     */
+    public function findByFilters(array $filters): array
+    {
         $query = "SELECT * FROM public.users WHERE 1=1";
         $params = [];
 
@@ -43,6 +68,6 @@ class UserRepository {
 
         $stmt = $this->db->prepare($query);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

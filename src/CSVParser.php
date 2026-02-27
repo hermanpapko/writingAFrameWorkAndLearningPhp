@@ -1,12 +1,14 @@
 <?php
 
 namespace App;
+
 use Generator;
 use Exception;
 
 class CSVParser
 {
-    public function parse(string $filePath): Generator {
+    public function parse(string $filePath): Generator
+    {
         if (!file_exists($filePath)) {
             throw new Exception("File not found: $filePath");
         }
