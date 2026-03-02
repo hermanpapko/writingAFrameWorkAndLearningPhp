@@ -18,7 +18,7 @@
         input[type="file"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; }
         button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; width: 100%; }
         button:hover { background: #1d4ed8; }
-        .alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; }
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; display: none; }
         .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -28,19 +28,13 @@
 <body>
 
 <div class="container">
-    <?php if (isset($_SESSION['success'])): ?>
-        <div class="alert alert-success">✓ Operation completed successfully! (<?= (int)($_SESSION['count'] ?? 0) ?> records processed)</div>
-        <?php unset($_SESSION['success'], $_SESSION['count']); ?>
-    <?php endif; ?>
-    <?php if (isset($_GET['error'])): ?>
-        <div class="alert alert-error">⚠ Error: <?= htmlspecialchars($_GET['error']) ?></div>
-    <?php endif; ?>
+    <div id="alert-box" class="alert"></div>
 
     <div class="grid">
         <div class="card">
             <h2>Import Users (CSV)</h2>
             <p style="font-size: 0.8rem; color: #6b7280;">Max file size: 5 MB. Automatic parsing enabled.</p>
-            <form action="/upload-csv" method="POST" enctype="multipart/form-data">
+            <form action="/users/import" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Select CSV File</label>
                     <input type="file" name="user_csv" accept=".csv" required>
@@ -52,7 +46,7 @@
         <div class="card">
             <h2>Generate Mock Data</h2>
             <p style="font-size: 0.8rem; color: #6b7280;">Uses Faker library to create dummy records.</p>
-            <form action="/generate" method="POST">
+            <form action="/users/generate" method="POST">
                 <div class="form-group">
                     <label>Record Quantity</label>
                     <input type="number" name="quantity" value="50" min="1" max="10000">
@@ -75,6 +69,51 @@
         </div>
     </div>
 </div>
+
+<script>
+    const alertBox = document.getElementById('alert-box');
+
+    function showAlert(message, isError = false) {
+        alertBox.textContent = message;
+        alertBox.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+        alertBox.style.display = 'block';
+    }
+
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const action = form.getAttribute('action');
+            
+            try {
+                const response = await fetch(action, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    if (result.count !== undefined) {
+                        showAlert(`✓ Success! ${result.count} records processed.`);
+                    } else if (result.written_lines !== undefined) {
+                        showAlert(`✓ Success! ${result.written_lines} lines generated in ${result.file}.`);
+                    } else {
+                        showAlert('✓ Success!');
+                    }
+                    // Если это импорт, перезагрузим список городов через 1.5 сек
+                    if (action === '/users/import') {
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                } else {
+                    showAlert(`⚠ Error: ${result.error || 'Unknown error'}`, true);
+                }
+            } catch (error) {
+                showAlert(`⚠ Request failed: ${error.message}`, true);
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

@@ -10,7 +10,7 @@ use PDO;
 
 class UserController
 {
-    public function analyze(): void
+    public function index(): void
     {
         try {
             $pdo = Database::getInstance()->getConnection();
@@ -23,37 +23,6 @@ class UserController
         } catch (\Exception $e) {
             http_response_code(500);
             echo "Database error: " . $e->getMessage();
-        }
-    }
-
-    public function parse(): void
-    {
-        try {
-            $db = Database::getInstance();
-            $repository = new UserRepository($db);
-            $parser = new CSVParser();
-
-            $csvFile = dirname(__DIR__, 2) . '/var/users.csv';
-
-            if (!file_exists($csvFile)) {
-                http_response_code(404);
-                echo "CSV file not found at: $csvFile";
-                return;
-            }
-
-            $count = 0;
-            foreach ($parser->parse($csvFile) as $userData) {
-                $repository->save($userData);
-                $count++;
-            }
-
-            $_SESSION['success'] = true;
-            $_SESSION['count'] = $count;
-            header('Location: /');
-            exit;
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo "Parsing error: " . $e->getMessage();
         }
     }
 
@@ -131,7 +100,7 @@ class UserController
         );
     }
 
-    public function upload(): void
+    public function import(): void
     {
         header('Content-Type: application/json; charset=utf-8');
 
@@ -169,10 +138,12 @@ class UserController
                 $count++;
             }
 
-            $_SESSION['success'] = true;
-            $_SESSION['count'] = $count;
-            header('Location: /');
-            exit;
+            http_response_code(201);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Import completed',
+                'count' => $count
+            ], JSON_UNESCAPED_UNICODE);
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
