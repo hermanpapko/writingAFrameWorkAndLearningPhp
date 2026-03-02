@@ -2,12 +2,28 @@
 
 namespace App;
 
+use App\Interfaces\ParserInterface;
 use Generator;
 use Exception;
 
-class CSVParser
+class CSVParser implements ParserInterface
 {
-    public function parse(string   $filePath): Generator
+    /**
+     * @param string $filePath
+     * @param string $separator
+     * @return Generator<int, array{
+     *     country: string,
+     *     city: string,
+     *     is_active: bool,
+     *     gender: string,
+     *     birth_date: string,
+     *     salary: float,
+     *     has_children: bool,
+     *     family_status: string,
+     *     registration_date: string
+     * }>
+     */
+    public function parse(string $filePath, string $separator = ','): Generator
     {
         if (!file_exists($filePath)) {
             throw new Exception("File not found: $filePath");
@@ -17,22 +33,33 @@ class CSVParser
         if (!$handle) {
             throw new Exception("Could not open file: $filePath");
         }
-        fgetcsv($handle, 0, ",", "\"", "\\");
 
-        while (($row = fgetcsv($handle, 0, ",", "\"", "\\")) !== false) {
+        // Попытка автоопределения разделителя (запятая или точка с запятой)
+        $header = fgets($handle);
+        if ($header !== false) {
+            $commas = substr_count($header, ',');
+            $semicolons = substr_count($header, ';');
+            $separator = ($semicolons > $commas) ? ';' : ',';
+            rewind($handle);
+        }
+
+        // Пропускаем строку заголовков
+        fgetcsv($handle, 0, $separator, '"', "\\");
+
+        while (($row = fgetcsv($handle, 0, $separator, '"', "\\")) !== false) {
             if (count($row) < 9) {
                 continue;
             }
             yield [
-                'country'           => $row[0],
-                'city'              => $row[1],
+                'country'           => (string)$row[0],
+                'city'              => (string)$row[1],
                 'is_active'         => filter_var($row[2], FILTER_VALIDATE_BOOLEAN),
-                'gender'            => $row[3],
-                'birth_date'        => $row[4],
+                'gender'            => (string)$row[3],
+                'birth_date'        => (string)$row[4],
                 'salary'            => (float)$row[5],
                 'has_children'      => filter_var($row[6], FILTER_VALIDATE_BOOLEAN),
-                'family_status'     => $row[7],
-                'registration_date' => $row[8]
+                'family_status'     => (string)$row[7],
+                'registration_date' => (string)$row[8]
             ];
         }
         fclose($handle);

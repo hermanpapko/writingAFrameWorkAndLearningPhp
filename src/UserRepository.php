@@ -2,9 +2,10 @@
 
 namespace App;
 
+use App\Interfaces\UserRepositoryInterface;
 use PDO;
 
-class UserRepository
+class UserRepository implements UserRepositoryInterface
 {
     private PDO $db;
     public function __construct(Database $db)
@@ -26,7 +27,7 @@ class UserRepository
      */
     public function save(array $data): bool
     {
-        $sql = "INSERT INTO public.users (country, city, is_active, gender, birth_date, salary, has_children, family_status, registration_date) 
+        $sql = "INSERT INTO users (country, city, is_active, gender, birth_date, salary, has_children, family_status, registration_date) 
                 VALUES (:country, :city, :is_active, :gender, :birth_date, :salary, :has_children, :family_status, :registration_date)";
         $stmt = $this->db->prepare($sql);
 
@@ -52,7 +53,7 @@ class UserRepository
      */
     public function findByFilters(array $filters): array
     {
-        $query = "SELECT * FROM public.users WHERE 1=1";
+        $query = "SELECT * FROM users WHERE 1=1";
         $params = [];
 
         if (isset($filters['city'])) {

@@ -14,22 +14,12 @@ class UserController
     {
         try {
             $pdo = Database::getInstance()->getConnection();
-            $stmt = $pdo->query("SELECT city FROM public.users");
+            $stmt = $pdo->query("SELECT city FROM users");
             /** @var \PDOStatement $stmt */
-            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $cities = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-            if (empty($users)) {
-                echo "<h1>No users found in database.</h1>";
-                echo "<p>Try <a href='/parse'>importing data from CSV</a> first.</p>";
-                return;
-            }
+            include __DIR__ . "/../Views/index.php";
 
-            echo "<h1>Cities:</h1>";
-            echo "<ul>";
-            foreach ($users as $user) {
-                echo "<li>" . htmlspecialchars($user['city']) . "</li>";
-            }
-            echo "</ul>";
         } catch (\Exception $e) {
             http_response_code(500);
             echo "Database error: " . $e->getMessage();
@@ -57,7 +47,10 @@ class UserController
                 $count++;
             }
 
-            echo "Import successful. $count records processed.";
+            $_SESSION['success'] = true;
+            $_SESSION['count'] = $count;
+            header('Location: /');
+            exit;
         } catch (\Exception $e) {
             http_response_code(500);
             echo "Parsing error: " . $e->getMessage();
@@ -127,7 +120,7 @@ class UserController
         fclose($handle);
 
         http_response_code(200);
-        header('Content-Type: application/json; charset=dodutf-8');
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(
             [
                 'status' => 'ok',
@@ -136,5 +129,53 @@ class UserController
             ],
             JSON_UNESCAPED_UNICODE
         );
+    }
+
+    public function upload(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $file = $_FILES['user_csv'] ?? null;
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid upload.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $maxSize = 5 * 1024 * 1024;
+        if ($file['size'] > $maxSize) {
+            http_response_code(413);
+            echo json_encode(['error' => 'File too large.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        if (strtolower($fileExtension) !== 'csv') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid file extension.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        try {
+            $parser = new CSVParser();
+            $rows = $parser->parse($file['tmp_name']);
+
+            $db = Database::getInstance();
+            $repository = new UserRepository($db);
+
+            $count = 0;
+            foreach ($rows as $userData) {
+                $repository->save($userData);
+                $count++;
+            }
+
+            $_SESSION['success'] = true;
+            $_SESSION['count'] = $count;
+            header('Location: /');
+            exit;
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+        }
     }
 }
