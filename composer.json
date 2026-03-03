@@ -11,7 +11,14 @@
         }
     },
     "require": {
-        "fakerphp/faker": "^1.24"
+        "fakerphp/faker": "^1.24",
+        "php": "8.4"
+    },
+
+    "config": {
+        "platform": {
+            "php": "8.4"
+        }
     },
 
     "scripts": {
