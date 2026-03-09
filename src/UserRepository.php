@@ -2,47 +2,46 @@
 
 namespace App;
 
+use App\Core\DatabaseWrapper;
 use App\Interfaces\UserRepositoryInterface;
-use PDO;
+use App\Models\User;
 
 class UserRepository implements UserRepositoryInterface
 {
-    private PDO $db;
+    private DatabaseWrapper $db;
     public function __construct(Database $db)
     {
-        $this->db = $db->getConnection();
+        $this->db = $db->getWrapper();
     }
-    /**
-     * @param array{
-     *     country: string,
-     *     city: string,
-     *     is_active: bool,
-     *     gender: string,
-     *     birth_date: string,
-     *     salary: float|int|string,
-     *     has_children: bool,
-     *     family_status: string,
-     *     registration_date: string
-     * } $data
-     */
-    public function save(array $data): bool
+
+    public function save(User|array $user): bool
     {
+        $data = $user instanceof User ? $user->toArray() : $user;
+
+        // Базовая валидация обязательных полей
+        $required = ['country', 'city', 'gender', 'birth_date', 'salary', 'family_status', 'registration_date'];
+        foreach ($required as $field) {
+            if (!isset($data[$field]) || $data[$field] === '') {
+                throw new \InvalidArgumentException("Missing required field: $field");
+            }
+        }
+
         $sql = "INSERT INTO users (country, city, is_active, gender, birth_date, salary, has_children, family_status, registration_date) 
                 VALUES (:country, :city, :is_active, :gender, :birth_date, :salary, :has_children, :family_status, :registration_date)";
-        $stmt = $this->db->prepare($sql);
 
-        $stmt->bindValue(':country', $data['country']);
-        $stmt->bindValue(':city', $data['city']);
-        $stmt->bindValue(':is_active', $data['is_active'], PDO::PARAM_BOOL);
-        $stmt->bindValue(':gender', $data['gender']);
-        $stmt->bindValue(':birth_date', $data['birth_date']);
-        $stmt->bindValue(':salary', $data['salary']);
-        $stmt->bindValue(':has_children', $data['has_children'], PDO::PARAM_BOOL);
-        $stmt->bindValue(':family_status', $data['family_status']);
-        $stmt->bindValue(':registration_date', $data['registration_date']);
-
-        return $stmt->execute();
+        return $this->db->execute($sql, [
+            ':country'           => $data['country'],
+            ':city'              => $data['city'],
+            ':is_active'         => (int)($data['is_active'] ?? 0),
+            ':gender'            => $data['gender'],
+            ':birth_date'        => $data['birth_date'],
+            ':salary'            => $data['salary'],
+            ':has_children'      => (int)($data['has_children'] ?? 0),
+            ':family_status'     => $data['family_status'],
+            ':registration_date' => $data['registration_date'],
+        ]);
     }
+
     /**
      * @param array{
      *     city?: string,
@@ -67,8 +66,6 @@ class UserRepository implements UserRepositoryInterface
             $params['date_to'] = $filters['date_to'];
         }
 
-        $stmt = $this->db->prepare($query);
-        $stmt->execute($params);
-        return (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->db->fetchAll($query, $params);
     }
 }

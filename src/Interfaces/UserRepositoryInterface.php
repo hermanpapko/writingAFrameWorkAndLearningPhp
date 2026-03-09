@@ -2,10 +2,12 @@
 
 namespace App\Interfaces;
 
+use App\Models\User;
+
 interface UserRepositoryInterface
 {
     /**
-     * @param array{
+     * @param User|array{
      *     country: string,
      *     city: string,
      *     is_active: bool,
@@ -15,9 +17,9 @@ interface UserRepositoryInterface
      *     has_children: bool,
      *     family_status: string,
      *     registration_date: string
-     * } $data
+     * } $user
      */
-    public function save(array $data): bool;
+    public function save(User|array $user): bool;
 
     /**
      * @param array{

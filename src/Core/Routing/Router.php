@@ -1,21 +1,32 @@
 <?php
 
-namespace Core\Routing;
+namespace App\Core\Routing;
 
 class Router
 {
+    /** @var array<string, array<string, array<int, string>>> */
     private array $routes = [];
 
+    /**
+     * @param array{string, string} $handler
+     */
     public function get(string $path, array $handler): void
     {
         $this->routes['GET'][$path] = $handler;
     }
-
+    /**
+     * @param array{string, string} $handler
+     */
     public function post(string $path, array $handler): void
     {
         $this->routes['POST'][$path] = $handler;
     }
 
+    /**
+     * @param string $uri
+     * @param string $method
+     * @return void
+     */
     public function resolve(string $uri, string $method): void
     {
         $path = parse_url($uri, PHP_URL_PATH);

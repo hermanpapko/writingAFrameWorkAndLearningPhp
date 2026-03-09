@@ -3,8 +3,10 @@
 session_start();
 
 require_once __DIR__ . '/../vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
 
-use Core\Routing\Router;
+use App\Core\Routing\Router;
 use App\Controllers\UserController;
 
 $router = new Router();

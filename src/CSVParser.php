@@ -44,9 +44,9 @@ class CSVParser implements ParserInterface
         }
 
         // Пропускаем строку заголовков
-        fgetcsv($handle, 0, $separator, '"', "\\");
+        fgetcsv($handle, 0, $separator, '"', "");
 
-        while (($row = fgetcsv($handle, 0, $separator, '"', "\\")) !== false) {
+        while (($row = fgetcsv($handle, 0, $separator, '"', "")) !== false) {
             if (count($row) < 9) {
                 continue;
             }

@@ -2,27 +2,30 @@
 
 namespace App;
 
+use App\Core\DatabaseWrapper;
 use PDO;
 
 class Database
 {
     private static ?self $instance = null;
-    private PDO $pdo;
+    private DatabaseWrapper $wrapper;
 
     private function __construct()
     {
-        $host =  getenv('DB_HOST');
-        $db = getenv('DB_NAME');
-        $user = (string) getenv('DB_USER');
-        $password = (string) getenv('DB_PASSWORD');
-        $port = getenv('DB_PORT');
+        $host =  $_ENV['DB_HOST'] ?? 'localhost';
+        $db = $_ENV['DB_NAME'] ?? 'postgres';
+        $user = (string) ($_ENV['DB_USER'] ?? 'postgres');
+        $password = (string) ($_ENV['DB_PASSWORD'] ?? '');
+        $port = $_ENV['DB_PORT'] ?? '5432';
 
-        $this->pdo = new PDO(
+        $pdo = new PDO(
             "pgsql:host=$host;port=$port;dbname=$db",
             $user,
             $password,
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
         );
+
+        $this->wrapper = new DatabaseWrapper($pdo);
     }
 
     public static function getInstance(): self
@@ -33,8 +36,13 @@ class Database
         return self::$instance;
     }
 
+    public function getWrapper(): DatabaseWrapper
+    {
+        return $this->wrapper;
+    }
+
     public function getConnection(): PDO
     {
-        return $this->pdo;
+        return $this->wrapper->getPdo();
     }
 }

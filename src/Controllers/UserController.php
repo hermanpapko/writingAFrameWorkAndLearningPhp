@@ -13,10 +13,9 @@ class UserController
     public function index(): void
     {
         try {
-            $pdo = Database::getInstance()->getConnection();
-            $stmt = $pdo->query("SELECT city FROM users");
-            /** @var \PDOStatement $stmt */
-            $cities = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $db = Database::getInstance()->getWrapper();
+            $cities = $db->fetchAll("SELECT DISTINCT city FROM users");
+            $cities = array_column($cities, 'city');
 
             include __DIR__ . "/../Views/index.php";
 
@@ -74,14 +73,20 @@ class UserController
             return;
         }
 
-        fwrite($handle, "name;email;phone\n");
+        fwrite($handle, "country;city;is_active;gender;birth_date;salary;has_children;family_status;registration_date\n");
 
         for ($i = 0; $i < $quantity; $i++) {
             $line = sprintf(
-                "%s;%s;%s\n",
-                $faker->name(),
-                $faker->unique()->safeEmail(),
-                $faker->phoneNumber()
+                "%s;%s;%d;%s;%s;%.2f;%d;%s;%s\n",
+                $faker->country(),
+                $faker->city(),
+                $faker->boolean() ? 1 : 0,
+                $faker->randomElement(['male', 'female']),
+                $faker->date(),
+                $faker->randomFloat(2, 20000, 150000),
+                $faker->boolean() ? 1 : 0,
+                $faker->randomElement(['single', 'married', 'divorced']),
+                $faker->dateTimeBetween('-5 years', 'now')->format('Y-m-d H:i:s')
             );
             fwrite($handle, $line);
         }
@@ -134,7 +139,8 @@ class UserController
 
             $count = 0;
             foreach ($rows as $userData) {
-                $repository->save($userData);
+                $user = \App\Models\User::hydrate($userData);
+                $repository->save($user);
                 $count++;
             }
 
