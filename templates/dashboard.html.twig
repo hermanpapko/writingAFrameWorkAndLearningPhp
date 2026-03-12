@@ -1,0 +1,170 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <h1>Dashboard</h1>
+
+    <div class="grid">
+        {# 1. Import Block #}
+        <div class="card">
+            <h2>Import Users (CSV)</h2>
+            <form action="/users/import" method="POST" enctype="multipart/form-data" class="ajax-form">
+                <div class="form-group">
+                    <label>Select CSV File</label>
+                    <input type="file" name="user_csv" accept=".csv" required>
+                </div>
+                <button type="submit">Upload & Parse</button>
+            </form>
+        </div>
+
+        {# 2. Generation Block #}
+        <div class="card">
+            <h2>Generate Mock Data</h2>
+            <form action="/users/generate" method="POST" class="ajax-form">
+                <div class="form-group">
+                    <label>Record Quantity</label>
+                    <input type="number" name="quantity" value="50" min="1" max="10000">
+                </div>
+                <button type="submit">Generate var/data.txt</button>
+            </form>
+        </div>
+    </div>
+
+    {# 3. Statistics Chart (AJAX) #}
+    <div class="card full-width" style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Statistics</h2>
+            <select id="stat-field-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="country">By Country</option>
+                <option value="city">By City</option>
+                <option value="gender">By Gender</option>
+                <option value="is_active">By Activity</option>
+                <option value="has_children">Has Children</option>
+                <option value="family_status">Family Status</option>
+            </select>
+        </div>
+        <div style="position: relative; height: 300px;">
+            <canvas id="statsChart"></canvas>
+        </div>
+    </div>
+
+    {# 4. Users Table with Filtering #}
+    <div class="card full-width" style="margin-top: 20px;">
+        <h2>User List</h2>
+
+        <form method="GET" action="/" style="margin-bottom: 20px; display: flex; gap: 10px;">
+             <input type="text" name="country" placeholder="Filter by Country" value="{{ selected_country }}" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
+            <button type="submit" style="width: auto;">Filter</button>
+            {% if selected_country %}
+                <a href="/" style="padding: 10px; color: #666; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; text-align: left;">
+                        <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">ID</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Country</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">City</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Gender</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Salary</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ user.id }}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ user.country }}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ user.city }}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ user.gender }}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ user.salary|number_format(2) }}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                                {% if user.is_active %}
+                                    <span style="color: green;">Yes</span>
+                                {% else %}
+                                    <span style="color: red;">No</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 20px; text-align: center; color: #6b7280;">No users found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Pagination #}
+        {% if total_pages > 1 %}
+        <div style="margin-top: 20px; display: flex; justify-content: center; gap: 5px;">
+             {% if current_page > 1 %}
+                <a href="/?page={{ current_page - 1 }}{{ selected_country ? '&country=' ~ selected_country : '' }}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">&laquo; Prev</a>
+             {% endif %}
+
+             <span style="padding: 8px 12px; border: 1px solid #ddd; background: #f3f4f6; border-radius: 4px;">Page {{ current_page }} of {{ total_pages }}</span>
+
+             {% if current_page < total_pages %}
+                <a href="/?page={{ current_page + 1 }}{{ selected_country ? '&country=' ~ selected_country : '' }}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">Next &raquo;</a>
+             {% endif %}
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        let chartInstance = null;
+
+        async function loadStats(field) {
+            try {
+                const response = await fetch(`/count/${field}`);
+                if (!response.ok) throw new Error('Failed to fetch stats');
+
+                const data = await response.json();
+
+                const labels = data.stats.map(item => item.label || 'Unknown');
+                const counts = data.stats.map(item => item.count);
+
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Count by ${field}`,
+                            data: counts,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Initial load
+        loadStats('country');
+
+        // Listener for dropdown
+        document.getElementById('stat-field-select').addEventListener('change', (e) => {
+            loadStats(e.target.value);
+        });
+    </script>
+{% endblock %}
