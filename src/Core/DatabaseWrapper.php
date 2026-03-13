@@ -7,11 +7,9 @@ use PDOStatement;
 
 class DatabaseWrapper
 {
-    private PDO $pdo;
-
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
+    public function __construct(
+        private PDO $pdo,
+    ) {
     }
 
     /**

@@ -10,12 +10,11 @@ use Faker\Factory as FakerFactory;
 class UserController
 {
     private DatabaseWrapper $db;
-    private RendererInterface $renderer;
 
-    public function __construct(RendererInterface $renderer)
-    {
+    public function __construct(
+        private RendererInterface $renderer,
+    ) {
         $this->db = Database::getInstance()->getWrapper();
-        $this->renderer = $renderer;
     }
 
     public function index(): void
