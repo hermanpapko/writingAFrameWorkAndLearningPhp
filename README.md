@@ -24,13 +24,13 @@ This is a lightweight educational PHP framework designed to demonstrate key web 
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repo-url>
+    git clone https://github.com/hermanpapko/writingAFrameWorkAndLearningPhp
     cd writingAFrameWorkAndLearningPhp
     ```
 
 2.  **Create an `.env` file** from the example and fill it out:
     ```bash
-    cp .env.example .env
+    cp .env .env
     ```
     The contents of `.env` should look like this:
     ```dotenv
