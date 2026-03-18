@@ -18,7 +18,6 @@ class UserRepository implements UserRepositoryInterface
     {
         $data = $user instanceof User ? $user->toArray() : $user;
 
-        // Базовая валидация обязательных полей
         $required = ['country', 'city', 'gender', 'birth_date', 'salary', 'family_status', 'registration_date'];
         foreach ($required as $field) {
             if (!isset($data[$field]) || $data[$field] === '') {
@@ -26,8 +25,15 @@ class UserRepository implements UserRepositoryInterface
             }
         }
 
-        $sql = "INSERT INTO users (country, city, is_active, gender, birth_date, salary, has_children, family_status, registration_date) 
-                VALUES (:country, :city, :is_active, :gender, :birth_date, :salary, :has_children, :family_status, :registration_date)";
+        $sql = "INSERT INTO users (
+            country, city, is_active, gender, birth_date, 
+            salary, has_children, family_status, registration_date, 
+            organization_id
+        ) VALUES (
+            :country, :city, :is_active, :gender, :birth_date, 
+            :salary, :has_children, :family_status, :registration_date, 
+            1
+        )";
 
         return $this->db->execute($sql, [
             ':country'           => $data['country'],

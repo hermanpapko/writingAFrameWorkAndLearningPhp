@@ -21,8 +21,6 @@ services:
       DB_PORT: ${DB_PORT}
 
   db:
-    volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     image: postgres:17-alpine
     env_file:
       - .env

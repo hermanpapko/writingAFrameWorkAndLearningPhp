@@ -6,6 +6,12 @@ class Router
 {
     /** @var array<string, array<string, array{object, string}>> */
     private array $routes = [];
+    private RouteMatcher $matcher;
+
+    public function __construct()
+    {
+        $this->matcher = new RouteMatcher();
+    }
 
     /**
      * @param array{object, string} $handler
@@ -25,33 +31,16 @@ class Router
 
     public function resolve(string $uri, string $method): void
     {
-        $path = (string) parse_url($uri, PHP_URL_PATH);
+        $match = $this->matcher->match($uri, $method, $this->routes);
 
-        $handler = null;
-        $params = [];
-
-        // Direct match
-        if (isset($this->routes[$method][$path])) {
-            $handler = $this->routes[$method][$path];
-        } else {
-            // Regex match
-            foreach ($this->routes[$method] ?? [] as $routePath => $routeHandler) {
-                $pattern = "#^" . $routePath . "$#";
-
-                if (preg_match($pattern, $path, $matches)) {
-                    $handler = $routeHandler;
-                    array_shift($matches); // Remove full match
-                    $params = $matches;
-                    break;
-                }
-            }
-        }
-
-        if (!$handler) {
+        if (!$match) {
             http_response_code(404);
             echo "404 Not Found";
             return;
         }
+
+        $handler = $match['handler'];
+        $params = $match['params'];
 
         $callable = [$handler[0], $handler[1]];
 
