@@ -1,10 +1,10 @@
 <?php
 
+use App\Core\Routing\Router;
 
 $twig = require_once __DIR__ . '/../src/Core/bootstrap.php';
 require_once __DIR__ . '/../src/Core/dependencies.php';
 
-use App\Core\Routing\Router;
 
 $uri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
