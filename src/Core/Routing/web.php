@@ -1,13 +1,24 @@
 <?php
 
 use App\Controllers\UserController;
+use App\Controllers\OrganizationController;
 use App\Core\Routing\Router;
 
 return function (Router $router, $render) {
     $userController = new UserController($render);
+    $orgController = new OrganizationController($render);
 
+    // User Routes
     $router->get('/', [$userController, 'index']);
     $router->post('/users/generate', [$userController, 'generate']);
     $router->post('/users/import', [$userController, 'import']);
     $router->get('/count/(\w+)', [$userController, 'countByField']);
+
+    // Organization Routes
+    $router->get('/organizations', [$orgController, 'index']);
+    $router->get('/organizations/create', [$orgController, 'create']);
+    $router->post('/organizations/store', [$orgController, 'store']);
+    $router->get('/organizations/edit/(\d+)', [$orgController, 'edit']);
+    $router->post('/organizations/update/(\d+)', [$orgController, 'update']);
+    $router->post('/organizations/delete/(\d+)', [$orgController, 'delete']);
 };

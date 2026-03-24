@@ -20,9 +20,14 @@ class UserController
     public function index(): void
     {
         try {
+            // Фильтры
             $rawCountry = $_GET['country'] ?? null;
             $country = $rawCountry ? trim($rawCountry) : null;
 
+            $rawOrgId = $_GET['organization_id'] ?? null;
+            $orgId = $rawOrgId !== '' && $rawOrgId !== null ? (int)$rawOrgId : null;
+
+            // Пагинация
             $page = max(1, (int)($_GET['page'] ?? 1));
             $perPage = 50;
             $offset = ($page - 1) * $perPage;
@@ -30,28 +35,42 @@ class UserController
             $countSql = "SELECT COUNT(*) as total FROM users";
             $sql = "SELECT * FROM users";
             $params = [];
-            $whereClause = '';
+            $whereConditions = [];
 
+            // Применяем фильтр по стране
             if ($country) {
-                $whereClause = " WHERE country ILIKE :country";
+                $whereConditions[] = "country ILIKE :country";
                 $params['country'] = '%' . $country . '%';
             }
 
-            // 1. Count Total
+            // Применяем фильтр по организации
+            if ($orgId) {
+                $whereConditions[] = "organization_id = :org_id";
+                $params['org_id'] = $orgId;
+            }
+
+            $whereClause = !empty($whereConditions) ? ' WHERE ' . implode(' AND ', $whereConditions) : '';
+
+            // 1. Считаем общее количество записей с учетом фильтров
             $countResult = $this->db->fetch($countSql . $whereClause, $params);
             $totalUsers = $countResult['total'] ?? 0;
             $totalPages = ceil($totalUsers / $perPage);
 
-            // 2. Fetch Users
+            // 2. Получаем пользователей с пагинацией и фильтрами
             $sql .= $whereClause . " ORDER BY id ASC LIMIT $perPage OFFSET $offset";
             $users = $this->db->fetchAll($sql, $params);
 
+            // Получаем дополнительные данные для UI
             $cities = $this->db->fetchAll("SELECT DISTINCT city FROM users ORDER BY city ASC");
+            $organizations = $this->db->fetchAll("SELECT id, name FROM organization ORDER BY name ASC");
 
+            // Рендерим шаблон
             $this->renderer->render('dashboard', [
                 'users' => $users,
                 'cities' => array_column($cities, 'city'),
+                'organizations' => $organizations,
                 'selected_country' => $country,
+                'selected_org' => $orgId,
                 'current_page' => $page,
                 'total_pages' => $totalPages
             ]);
@@ -70,8 +89,20 @@ class UserController
             return;
         }
 
-        $sql = "SELECT $field as label, COUNT(*) as count FROM users GROUP BY $field";
-        $data = $this->db->fetchAll($sql);
+        $rawOrgId = $_GET['organization_id'] ?? null;
+        $orgId = $rawOrgId !== '' && $rawOrgId !== null ? (int)$rawOrgId : null;
+
+        $whereClause = "";
+        $params = [];
+
+        // Фильтрация статистики по организации
+        if ($orgId) {
+            $whereClause = "WHERE organization_id = :org_id ";
+            $params['org_id'] = $orgId;
+        }
+
+        $sql = "SELECT $field as label, COUNT(*) as count FROM users $whereClause GROUP BY $field";
+        $data = $this->db->fetchAll($sql, $params);
 
         $this->renderer->render('stats', ['stats' => $data]);
     }
@@ -180,6 +211,8 @@ class UserController
 
             $count = 0;
             foreach ($rows as $userData) {
+                // Если нужно при импорте жестко задавать organization_id из UI,
+                // можно передавать его из $_POST и добавлять к $userData
                 $user = \App\Models\User::hydrate($userData);
                 $repository->save($user);
                 $count++;

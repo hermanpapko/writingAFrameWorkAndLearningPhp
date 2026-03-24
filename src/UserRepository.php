@@ -25,6 +25,9 @@ class UserRepository implements UserRepositoryInterface
             }
         }
 
+        // Берем organization_id из данных, если нет - ставим 1 (дефолтная организация)
+        $orgId = $data['organization_id'] ?? 1;
+
         $sql = "INSERT INTO users (
             country, city, is_active, gender, birth_date, 
             salary, has_children, family_status, registration_date, 
@@ -32,7 +35,7 @@ class UserRepository implements UserRepositoryInterface
         ) VALUES (
             :country, :city, :is_active, :gender, :birth_date, 
             :salary, :has_children, :family_status, :registration_date, 
-            1
+            :organization_id
         )";
 
         return $this->db->execute($sql, [
@@ -45,14 +48,16 @@ class UserRepository implements UserRepositoryInterface
             ':has_children'      => (int)($data['has_children'] ?? 0),
             ':family_status'     => $data['family_status'],
             ':registration_date' => $data['registration_date'],
+            ':organization_id'   => $orgId, // Передаем динамический ID
         ]);
     }
 
     /**
      * @param array{
-     *     city?: string,
-     *     date_from?: string,
-     *     date_to?: string
+     * city?: string,
+     * date_from?: string,
+     * date_to?: string,
+     * organization_id?: int
      * } $filters
      * @return array<int, array<string, mixed>>
      */
@@ -70,6 +75,12 @@ class UserRepository implements UserRepositoryInterface
             $query .= " AND registration_date BETWEEN :date_from AND :date_to";
             $params['date_from'] = $filters['date_from'];
             $params['date_to'] = $filters['date_to'];
+        }
+
+        // Добавлена возможность искать пользователей по организации через репозиторий
+        if (isset($filters['organization_id'])) {
+            $query .= " AND organization_id = :organization_id";
+            $params['organization_id'] = (int)$filters['organization_id'];
         }
 
         return $this->db->fetchAll($query, $params);
