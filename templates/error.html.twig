@@ -1,0 +1,12 @@
+{# templates/error.html.twig #}
+{% extends "base.html.twig" %}
+
+{% block title %}Ошибка{% endblock %}
+
+{% block body %}
+    <h1>Произошла ошибка</h1>
+    <div style="color: red; border: 1px solid red; padding: 10px;">
+        {{ error }}
+    </div>
+    <p><a href="/">Вернуться на главную</a></p>
+{% endblock %}
