@@ -1,5 +1,8 @@
 <?php
 
+session_name('MY_APP_SESSION');
+session_start();
+
 use App\Core\Routing\Router;
 
 $twig = require_once __DIR__ . '/../src/Core/bootstrap.php';

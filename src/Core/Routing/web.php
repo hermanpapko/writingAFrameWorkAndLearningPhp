@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\AuthController;
 use App\Controllers\UserController;
 use App\Controllers\OrganizationController;
 use App\Core\Routing\Router;
@@ -7,6 +8,7 @@ use App\Core\Routing\Router;
 return function (Router $router, $render) {
     $userController = new UserController($render);
     $orgController = new OrganizationController($render);
+    $authController = new AuthController($render);
 
     // User Routes
     $router->get('/', [$userController, 'index']);
@@ -21,4 +23,9 @@ return function (Router $router, $render) {
     $router->get('/organizations/edit/(\d+)', [$orgController, 'edit']);
     $router->post('/organizations/update/(\d+)', [$orgController, 'update']);
     $router->post('/organizations/delete/(\d+)', [$orgController, 'delete']);
+
+    //Authentication Routes
+    $router->get('/login', [$authController, 'showLogin']);
+    $router->post('/login', [$authController, 'login']);
+    $router->post('/logout', [$authController, 'logout']);
 };

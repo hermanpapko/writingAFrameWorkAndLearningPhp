@@ -15,39 +15,59 @@ class OrganizationController
         $this->db = Database::getInstance()->getWrapper();
     }
 
+    private function requireAuth(): int
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: /login");
+            exit;
+        }
+        return (int)$_SESSION['user_id'];
+    }
+
     // List with pagination
     public function index(): void
     {
+        $ownerId = $this->requireAuth();
+
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 10;
         $offset = ($page - 1) * $perPage;
 
-        $countResult = $this->db->fetch("SELECT COUNT(*) as total FROM organization");
+        $countResult = $this->db->fetch(
+            "SELECT COUNT(*) as total FROM organization WHERE owner_id = :owner_id",
+            ['owner_id' => $ownerId]
+        );
         $total = $countResult['total'] ?? 0;
         $totalPages = ceil($total / $perPage);
 
-        $sql = "SELECT * FROM organization ORDER BY id ASC LIMIT $perPage OFFSET $offset";
-        $organizations = $this->db->fetchAll($sql);
+        $sql = "SELECT * FROM organization WHERE owner_id = :owner_id ORDER BY id ASC LIMIT $perPage OFFSET $offset";
+        $organizations = $this->db->fetchAll($sql, ['owner_id' => $ownerId]);
 
         $this->renderer->render('organizations/index', [
-            'organizations' => $organizations,
-            'current_page' => $page,
-            'total_pages' => $totalPages
+          'organizations' => $organizations,
+          'current_page' => $page,
+          'total_pages' => $totalPages
         ]);
     }
 
     // Display create template
     public function create(): void
     {
+        $this->requireAuth();
         $this->renderer->render('organizations/form', ['organization' => null]);
     }
 
     // Handle creation
     public function store(): void
     {
-        $name = $_POST['name'] ?? '';
+        $ownerId = $this->requireAuth();
+        $name = trim($_POST['name'] ?? '');
+
         if ($name) {
-            $this->db->execute("INSERT INTO organization (name) VALUES (:name)", [':name' => $name]);
+            $this->db->execute(
+                "INSERT INTO organization (name, owner_id) VALUES (:name, :owner_id)",
+                ['name' => $name, 'owner_id' => $ownerId]
+            );
         }
         header('Location: /organizations');
         exit;
@@ -56,7 +76,13 @@ class OrganizationController
     // Display edit template (fills fields with data)
     public function edit(string $id): void
     {
-        $org = $this->db->fetch("SELECT * FROM organization WHERE id = :id", ['id' => (int)$id]);
+        $ownerId = $this->requireAuth();
+
+        $org = $this->db->fetch(
+            "SELECT * FROM organization WHERE id = :id AND owner_id = :owner_id",
+            ['id' => (int)$id, 'owner_id' => $ownerId]
+        );
+
         if (!$org) {
             header('Location: /organizations');
             exit;
@@ -67,11 +93,13 @@ class OrganizationController
     // Handle update
     public function update(string $id): void
     {
-        $name = $_POST['name'] ?? '';
+        $ownerId = $this->requireAuth();
+        $name = trim($_POST['name'] ?? '');
+
         if ($name) {
             $this->db->execute(
-                "UPDATE organization SET name = :name, \"updatedAt\" = CURRENT_TIMESTAMP WHERE id = :id",
-                ['name' => $name, 'id' => (int)$id]
+                "UPDATE organization SET name = :name, \"updatedAt\" = CURRENT_TIMESTAMP WHERE id = :id AND owner_id = :owner_id",
+                ['name' => $name, 'id' => (int)$id, 'owner_id' => $ownerId]
             );
         }
         header('Location: /organizations');
@@ -81,7 +109,13 @@ class OrganizationController
     // Handle delete
     public function delete(string $id): void
     {
-        $this->db->execute("DELETE FROM organization WHERE id = :id", ['id' => (int)$id]);
+        $ownerId = $this->requireAuth();
+
+        $this->db->execute(
+            "DELETE FROM organization WHERE id = :id AND owner_id = :owner_id",
+            ['id' => (int)$id, 'owner_id' => $ownerId]
+        );
+
         header('Location: /organizations');
         exit;
     }
