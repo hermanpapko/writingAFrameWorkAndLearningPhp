@@ -1,6 +1,7 @@
 <?php
 
 use App\Controllers\AuthController;
+use App\Controllers\LanguageController;
 use App\Controllers\UserController;
 use App\Controllers\OrganizationController;
 use App\Core\Routing\Router;
@@ -9,6 +10,7 @@ return function (Router $router, $render) {
     $userController = new UserController($render);
     $orgController = new OrganizationController($render);
     $authController = new AuthController($render);
+    $langController = new LanguageController();
 
     // User Routes
     $router->get('/', [$userController, 'index']);
@@ -28,4 +30,7 @@ return function (Router $router, $render) {
     $router->get('/login', [$authController, 'showLogin']);
     $router->post('/login', [$authController, 'login']);
     $router->post('/logout', [$authController, 'logout']);
+
+    //Language Route
+    $router->get('/lang/([a-z]{2})', [$langController, 'switchLanguage']);
 };

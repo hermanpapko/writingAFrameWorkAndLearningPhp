@@ -25,7 +25,6 @@ class UserRepository implements UserRepositoryInterface
             }
         }
 
-        // Берем organization_id из данных, если нет - ставим 1 (дефолтная организация)
         $orgId = $data['organization_id'] ?? 1;
 
         $sql = "INSERT INTO users (
@@ -48,7 +47,7 @@ class UserRepository implements UserRepositoryInterface
             ':has_children'      => (int)($data['has_children'] ?? 0),
             ':family_status'     => $data['family_status'],
             ':registration_date' => $data['registration_date'],
-            ':organization_id'   => $orgId, // Передаем динамический ID
+            ':organization_id'   => $orgId,
         ]);
     }
 
@@ -77,7 +76,6 @@ class UserRepository implements UserRepositoryInterface
             $params['date_to'] = $filters['date_to'];
         }
 
-        // Добавлена возможность искать пользователей по организации через репозиторий
         if (isset($filters['organization_id'])) {
             $query .= " AND organization_id = :organization_id";
             $params['organization_id'] = (int)$filters['organization_id'];

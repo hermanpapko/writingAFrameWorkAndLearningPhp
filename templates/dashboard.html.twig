@@ -1,50 +1,46 @@
 {% extends "base.html.twig" %}
 
 {% block body %}
-    <h1>Dashboard</h1>
+    <h1>{{ __('dashboard') }}</h1>
 
-    {# Ссылка на управление организациями #}
     <div style="margin-bottom: 20px;">
-        <a href="/organizations" style="padding: 10px 15px; background: #10b981; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Manage Organizations</a>
+        <a href="/organizations" style="padding: 10px 15px; background: #10b981; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">{{ __('manage_organizations') }}</a>
     </div>
 
     <div class="grid">
-        {# 1. Import Block #}
         <div class="card">
-            <h2>Import Users (CSV)</h2>
+            <h2>{{ __('import_users') }}</h2>
             <form action="/users/import" method="POST" enctype="multipart/form-data" class="ajax-form">
                 <div class="form-group">
-                    <label>Select CSV File</label>
+                    <label>{{ __('select_csv') }}</label>
                     <input type="file" name="user_csv" accept=".csv" required>
                 </div>
-                <button type="submit">Upload & Parse</button>
+                <button type="submit">{{ __('upload_parse') }}</button>
             </form>
         </div>
 
-        {# 2. Generation Block #}
         <div class="card">
-            <h2>Generate Mock Data</h2>
+            <h2>{{ __('generate_mock') }}</h2>
             <form action="/users/generate" method="POST" class="ajax-form">
                 <div class="form-group">
-                    <label>Record Quantity</label>
+                    <label>{{ __('record_qty') }}</label>
                     <input type="number" name="quantity" value="50" min="1" max="10000">
                 </div>
-                <button type="submit">Generate var/data.txt</button>
+                <button type="submit">{{ __('generate_txt') }}</button>
             </form>
         </div>
     </div>
 
-    {# 3. Statistics Chart (AJAX) #}
     <div class="card full-width" style="margin-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Statistics</h2>
+            <h2>{{ __('statistics') }}</h2>
             <select id="stat-field-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                <option value="country">By Country</option>
-                <option value="city">By City</option>
-                <option value="gender">By Gender</option>
-                <option value="is_active">By Activity</option>
-                <option value="has_children">Has Children</option>
-                <option value="family_status">Family Status</option>
+                <option value="country">{{ __('by_country') }}</option>
+                <option value="city">{{ __('by_city') }}</option>
+                <option value="gender">{{ __('by_gender') }}</option>
+                <option value="is_active">{{ __('by_activity') }}</option>
+                <option value="has_children">{{ __('has_children') }}</option>
+                <option value="family_status">{{ __('family_status') }}</option>
             </select>
         </div>
         <div style="position: relative; height: 300px;">
@@ -52,23 +48,21 @@
         </div>
     </div>
 
-    {# 4. Users Table with Filtering #}
     <div class="card full-width" style="margin-top: 20px;">
-        <h2>User List</h2>
+        <h2>{{ __('user_list') }}</h2>
 
         <form method="GET" action="/" style="margin-bottom: 20px; display: flex; gap: 10px;">
-            {# Добавлен фильтр по организации #}
             <select name="organization_id" id="dashboard-org-select" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="">All Organizations</option>
+                <option value="">{{ __('all_orgs') }}</option>
                 {% for org in organizations %}
                     <option value="{{ org.id }}" {% if selected_org == org.id %}selected{% endif %}>{{ org.name }}</option>
                 {% endfor %}
             </select>
 
-            <input type="text" name="country" placeholder="Filter by Country" value="{{ selected_country }}" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
-            <button type="submit" style="width: auto;">Filter</button>
+            <input type="text" name="country" placeholder="{{ __('filter_country') }}" value="{{ selected_country }}" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
+            <button type="submit" style="width: auto;">{{ __('filter') }}</button>
             {% if selected_country or selected_org %}
-                <a href="/" style="padding: 10px; color: #666; text-decoration: none;">Clear</a>
+                <a href="/" style="padding: 10px; color: #666; text-decoration: none;">{{ __('clear') }}</a>
             {% endif %}
         </form>
 
@@ -76,12 +70,12 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                 <tr style="background: #f9fafb; text-align: left;">
-                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">ID</th>
-                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Country</th>
-                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">City</th>
-                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Gender</th>
-                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Salary</th>
-                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Active</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('id') }}</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('country') }}</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('city') }}</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('gender') }}</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('salary') }}</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('active') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -94,32 +88,31 @@
                         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ user.salary|number_format(2) }}</td>
                         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
                             {% if user.is_active %}
-                                <span style="color: green;">Yes</span>
+                                <span style="color: green;">{{ __('yes') }}</span>
                             {% else %}
-                                <span style="color: red;">No</span>
+                                <span style="color: red;">{{ __('no') }}</span>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6" style="padding: 20px; text-align: center; color: #6b7280;">No users found.</td>
+                        <td colspan="6" style="padding: 20px; text-align: center; color: #6b7280;">{{ __('no_users') }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        {# Pagination - обновлено для поддержки organization_id #}
         {% if total_pages > 1 %}
             <div style="margin-top: 20px; display: flex; justify-content: center; gap: 5px;">
                 {% if current_page > 1 %}
-                    <a href="/?page={{ current_page - 1 }}{{ selected_country ? '&country=' ~ selected_country : '' }}{{ selected_org ? '&organization_id=' ~ selected_org : '' }}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">&laquo; Prev</a>
+                    <a href="/?page={{ current_page - 1 }}{{ selected_country ? '&country=' ~ selected_country : '' }}{{ selected_org ? '&organization_id=' ~ selected_org : '' }}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">{{ __('prev')|raw }}</a>
                 {% endif %}
 
-                <span style="padding: 8px 12px; border: 1px solid #ddd; background: #f3f4f6; border-radius: 4px;">Page {{ current_page }} of {{ total_pages }}</span>
+                <span style="padding: 8px 12px; border: 1px solid #ddd; background: #f3f4f6; border-radius: 4px;">{{ __('page_of')|format(current_page, total_pages) }}</span>
 
                 {% if current_page < total_pages %}
-                    <a href="/?page={{ current_page + 1 }}{{ selected_country ? '&country=' ~ selected_country : '' }}{{ selected_org ? '&organization_id=' ~ selected_org : '' }}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">Next &raquo;</a>
+                    <a href="/?page={{ current_page + 1 }}{{ selected_country ? '&country=' ~ selected_country : '' }}{{ selected_org ? '&organization_id=' ~ selected_org : '' }}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;">{{ __('next')|raw }}</a>
                 {% endif %}
             </div>
         {% endif %}
@@ -135,12 +128,10 @@
 
         async function loadStats(field) {
             try {
-                // Получаем ID выбранной организации для фильтрации статистики
                 const orgSelect = document.getElementById('dashboard-org-select');
                 const orgId = orgSelect ? orgSelect.value : '';
                 const queryParam = orgId ? `?organization_id=${orgId}` : '';
 
-                // Отправляем запрос с параметром organization_id
                 const response = await fetch(`/count/${field}${queryParam}`);
                 if (!response.ok) throw new Error('Failed to fetch stats');
 
@@ -158,7 +149,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: `Count by ${field}`,
+                            label: `{{ __('count_by') }} ${field}`,
                             data: counts,
                             backgroundColor: '#3b82f6',
                             borderRadius: 4
@@ -186,8 +177,6 @@
             loadStats(e.target.value);
         });
 
-        // Опционально: динамическое обновление графика при смене организации без перезагрузки страницы
-        // (но обычно форма отправляется и страница перезагружается, так что это просто страховка)
         const orgSelectEl = document.getElementById('dashboard-org-select');
         if (orgSelectEl) {
             orgSelectEl.addEventListener('change', () => {

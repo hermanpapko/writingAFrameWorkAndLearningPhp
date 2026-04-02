@@ -1,17 +1,17 @@
 {% extends "base.html.twig" %}
 
 {% block body %}
-    <h1>Organizations</h1>
+    <h1>{{ __('organizations') }}</h1>
     <div class="card full-width">
-        <a href="/organizations/create" style="padding: 10px; background: #3b82f6; color: white; text-decoration: none; border-radius: 4px; display: inline-block; margin-bottom: 20px;">Create New Organization</a>
+        <a href="/organizations/create" style="padding: 10px; background: #3b82f6; color: white; text-decoration: none; border-radius: 4px; display: inline-block; margin-bottom: 20px;">{{ __('create_org') }}</a>
 
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
             <tr style="background: #f9fafb; text-align: left;">
-                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">ID</th>
-                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Name</th>
-                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Created At</th>
-                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Actions</th>
+                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('id') }}</th>
+                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('name') }}</th>
+                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('created_at') }}</th>
+                <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ __('actions') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -21,14 +21,14 @@
                     <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ org.name }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">{{ org.createdAt }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
-                        <a href="/organizations/edit/{{ org.id }}" style="color: blue; text-decoration: none; margin-right: 10px;">Edit</a>
-                        <form action="/organizations/delete/{{ org.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this organization? All associated users will also be deleted due to CASCADE.');">
-                            <button type="submit" style="background: none; border: none; color: red; cursor: pointer; text-decoration: underline;">Delete</button>
+                        <a href="/organizations/edit/{{ org.id }}" style="color: blue; text-decoration: none; margin-right: 10px;">{{ __('edit') }}</a>
+                        <form action="/organizations/delete/{{ org.id }}" method="POST" style="display:inline;" onsubmit="return confirm('{{ __('confirm_delete') }}');">
+                            <button type="submit" style="background: none; border: none; color: red; cursor: pointer; text-decoration: underline;">{{ __('delete') }}</button>
                         </form>
                     </td>
                 </tr>
             {% else %}
-                <tr><td colspan="4" style="text-align: center; padding: 20px;">No organizations found.</td></tr>
+                <tr><td colspan="4" style="text-align: center; padding: 20px;">{{ __('no_orgs') }}</td></tr>
             {% endfor %}
             </tbody>
         </table>
@@ -37,11 +37,11 @@
         {% if total_pages > 1 %}
             <div style="margin-top: 20px; display: flex; justify-content: center; gap: 5px;">
                 {% if current_page > 1 %}
-                    <a href="/organizations?page={{ current_page - 1 }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">&laquo; Prev</a>
+                    <a href="/organizations?page={{ current_page - 1 }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">{{ __('prev')|raw }}</a>
                 {% endif %}
-                <span style="padding: 8px 12px; border: 1px solid #ddd; background: #f3f4f6;">Page {{ current_page }} of {{ total_pages }}</span>
+                <span style="padding: 8px 12px; border: 1px solid #ddd; background: #f3f4f6;">{{ __('page_of')|format(current_page, total_pages) }}</span>
                 {% if current_page < total_pages %}
-                    <a href="/organizations?page={{ current_page + 1 }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">Next &raquo;</a>
+                    <a href="/organizations?page={{ current_page + 1 }}" style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none;">{{ __('next')|raw }}</a>
                 {% endif %}
             </div>
         {% endif %}

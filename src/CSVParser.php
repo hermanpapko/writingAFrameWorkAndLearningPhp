@@ -34,7 +34,6 @@ class CSVParser implements ParserInterface
             throw new Exception("Could not open file: $filePath");
         }
 
-        // Попытка автоопределения разделителя (запятая или точка с запятой)
         $header = fgets($handle);
         if ($header !== false) {
             $commas = substr_count($header, ',');
@@ -43,7 +42,6 @@ class CSVParser implements ParserInterface
             rewind($handle);
         }
 
-        // Пропускаем строку заголовков
         fgetcsv($handle, 0, $separator, '"', "");
 
         while (($row = fgetcsv($handle, 0, $separator, '"', "")) !== false) {
